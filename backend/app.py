@@ -76,6 +76,15 @@ def register():
 def login():
 
     data = request.get_json()
+    if not data:
+        return jsonify({
+        "message": "Invalid request"
+    }), 400
+
+    if "email" not in data or "password" not in data:
+        return jsonify({
+        "message": "Email and Password are required"
+    }), 400
 
     user = User.query.filter_by(email=data["email"]).first()
 
@@ -83,7 +92,7 @@ def login():
         return jsonify({
             "message": "User not found"
         }), 404
-
+    
     if not check_password_hash(user.password, data["password"]):
         return jsonify({
             "message": "Invalid Password"
