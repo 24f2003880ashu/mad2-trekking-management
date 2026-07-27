@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from config import Config
 from models import db, User
+from flask_cors import CORS
 
 from flask_jwt_extended import (
     JWTManager,
@@ -15,6 +16,7 @@ from werkzeug.security import (
 )
 
 app = Flask(__name__)
+CORS(app)
 app.config.from_object(Config)
 
 db.init_app(app)
