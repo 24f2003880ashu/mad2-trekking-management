@@ -215,7 +215,34 @@ def create_trek():
     return jsonify({
         "message": "Trek Created Successfully"
     }), 201
+# -------------------- Delete Trek --------------------
 
+@app.route("/treks/<int:trek_id>", methods=["DELETE"])
+@jwt_required()
+def delete_trek(trek_id):
+
+    current_user = get_jwt_identity()
+
+    user = User.query.get(int(current_user))
+
+    if user.role != "admin":
+        return jsonify({
+            "message": "Only Admin Can Delete Trek"
+        }), 403
+
+    trek = Trek.query.get(trek_id)
+
+    if not trek:
+        return jsonify({
+            "message": "Trek Not Found"
+        }), 404
+
+    db.session.delete(trek)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Trek Deleted Successfully"
+    }), 200
 
 if __name__ == "__main__":
     app.run(debug=True)
