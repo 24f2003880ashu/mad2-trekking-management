@@ -310,5 +310,29 @@ def book_trek(trek_id):
     return jsonify({
         "message": "Trek Booked Successfully"
     }), 201
+@app.route("/mybookings", methods=["GET"])
+@jwt_required()
+def my_bookings():
+
+    current_user = get_jwt_identity()
+
+    bookings = Booking.query.filter_by(
+        user_id=int(current_user)
+    ).all()
+
+    result = []
+
+    for booking in bookings:
+
+        trek = Trek.query.get(booking.trek_id)
+
+        result.append({
+            "booking_id": booking.id,
+            "trek_name": trek.name,
+            "booking_date": booking.booking_date,
+            "status": booking.status
+        })
+
+    return jsonify(result), 200
 if __name__ == "__main__":
     app.run(debug=True)
