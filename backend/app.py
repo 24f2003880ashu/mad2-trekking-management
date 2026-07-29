@@ -365,5 +365,32 @@ def all_bookings():
         })
 
     return jsonify(result), 200
+@app.route("/approve/<int:booking_id>", methods=["PUT"])
+@jwt_required()
+def approve_booking(booking_id):
+
+    current_user = get_jwt_identity()
+
+    user = User.query.get(int(current_user))
+
+    if user.role != "admin":
+        return jsonify({
+            "message": "Only Admin Can Approve Booking"
+        }), 403
+
+    booking = Booking.query.get(booking_id)
+
+    if not booking:
+        return jsonify({
+            "message": "Booking Not Found"
+        }), 404
+
+    booking.status = "Approved"
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Booking Approved Successfully"
+    }), 200
 if __name__ == "__main__":
     app.run(debug=True)
