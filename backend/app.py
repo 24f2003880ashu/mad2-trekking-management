@@ -334,5 +334,36 @@ def my_bookings():
         })
 
     return jsonify(result), 200
+@app.route("/allbookings", methods=["GET"])
+@jwt_required()
+def all_bookings():
+
+    current_user = get_jwt_identity()
+
+    user = User.query.get(int(current_user))
+
+    if user.role != "admin":
+        return jsonify({
+            "message": "Only Admin Can View All Bookings"
+        }), 403
+
+    bookings = Booking.query.all()
+
+    result = []
+
+    for booking in bookings:
+
+        trek = Trek.query.get(booking.trek_id)
+        booked_user = User.query.get(booking.user_id)
+
+        result.append({
+            "booking_id": booking.id,
+            "user_name": booked_user.name,
+            "trek_name": trek.name,
+            "booking_date": booking.booking_date,
+            "status": booking.status
+        })
+
+    return jsonify(result), 200
 if __name__ == "__main__":
     app.run(debug=True)
