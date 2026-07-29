@@ -243,6 +243,48 @@ def delete_trek(trek_id):
     return jsonify({
         "message": "Trek Deleted Successfully"
     }), 200
+# -------------------- Update Trek --------------------
+
+@app.route("/treks/<int:trek_id>", methods=["PUT"])
+@jwt_required()
+def update_trek(trek_id):
+
+    current_user = get_jwt_identity()
+
+    user = User.query.get(int(current_user))
+
+    if user.role != "admin":
+        return jsonify({
+            "message": "Only Admin Can Update Trek"
+        }), 403
+
+    trek = Trek.query.get(trek_id)
+
+    if not trek:
+        return jsonify({
+            "message": "Trek Not Found"
+        }), 404
+
+    data = request.get_json()
+
+    trek.name = data["name"]
+    trek.location = data["location"]
+    trek.difficulty = data["difficulty"]
+    trek.duration = data["duration"]
+    trek.available_slots = data["available_slots"]
+    trek.status = data["status"]
+    trek.start_date = datetime.strptime(
+        data["start_date"], "%Y-%m-%d"
+    ).date()
+    trek.end_date = datetime.strptime(
+        data["end_date"], "%Y-%m-%d"
+    ).date()
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Trek Updated Successfully"
+    }), 200
 
 if __name__ == "__main__":
     app.run(debug=True)
