@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from config import Config
-from models import db, User, Trek
+from models import db, User, Trek, Booking
 from werkzeug.security import generate_password_hash
 from flask_cors import CORS
 from datetime import datetime
@@ -198,14 +198,12 @@ def create_trek():
     difficulty=data["difficulty"],
     duration=data["duration"],
     available_slots=data["available_slots"],
-    status=data["status"],
+    status="Upcoming",
     start_date=datetime.strptime(
-        data["start_date"],
-        "%Y-%m-%d"
+        data["start_date"], "%Y-%m-%d"
     ).date(),
     end_date=datetime.strptime(
-        data["end_date"],
-        "%Y-%m-%d"
+        data["end_date"], "%Y-%m-%d"
     ).date()
 )
 
@@ -285,6 +283,32 @@ def update_trek(trek_id):
     return jsonify({
         "message": "Trek Updated Successfully"
     }), 200
+# -------------------- Book Trek --------------------
 
+@app.route("/book/<int:trek_id>", methods=["POST"])
+@jwt_required()
+def book_trek(trek_id):
+
+    current_user = get_jwt_identity()
+
+    trek = Trek.query.get(trek_id)
+
+    if not trek:
+        return jsonify({
+            "message": "Trek Not Found"
+        }), 404
+
+    booking = Booking(
+        user_id=int(current_user),
+        trek_id=trek.id,
+        status="Pending"
+    )
+
+    db.session.add(booking)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Trek Booked Successfully"
+    }), 201
 if __name__ == "__main__":
     app.run(debug=True)
