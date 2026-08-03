@@ -8,6 +8,9 @@ celery_app = Celery(
     include=["tasks"]
 )
 
+# Load celeryconfig.py
+celery_app.config_from_object("celeryconfig")
+
 
 class FlaskTask(Task):
 
