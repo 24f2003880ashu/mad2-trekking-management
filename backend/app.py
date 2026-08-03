@@ -4,6 +4,8 @@ from models import db, User, Trek, Booking
 from werkzeug.security import generate_password_hash
 from flask_cors import CORS
 from datetime import datetime
+from flask_caching import Cache
+
 
 from flask_jwt_extended import (
     JWTManager,
@@ -21,8 +23,10 @@ app = Flask(__name__)
 CORS(app)
 app.config.from_object(Config)
 
+
 db.init_app(app)
 jwt = JWTManager(app)
+cache = Cache(app)
 
 with app.app_context():
 
@@ -157,8 +161,11 @@ def profile():
 
 # -------------------- Get Treks --------------------
 
+
+
 @app.route("/treks", methods=["GET"])
 @jwt_required()
+@cache.cached(timeout=60)
 def get_treks():
 
     treks = Trek.query.all()
@@ -167,12 +174,18 @@ def get_treks():
 
     for trek in treks:
         trek_list.append({
-            "id": trek.id,
-            "name": trek.name,
-            "location": trek.location,
-            "difficulty": trek.difficulty,
-            "duration": trek.duration
-        })
+    "id": trek.id,
+    "name": trek.name,
+    "location": trek.location,
+    "difficulty": trek.difficulty,
+    "duration": trek.duration,
+    "available_slots": trek.available_slots,
+    "status": trek.status,
+    "start_date": trek.start_date,
+    "end_date": trek.end_date,
+    "assigned_staff_id": trek.assigned_staff_id
+    })
+        
 
     return jsonify(trek_list), 200
 # -------------------- Create Trek --------------------
@@ -209,6 +222,7 @@ def create_trek():
 
     db.session.add(trek)
     db.session.commit()
+    cache.clear()
 
     return jsonify({
         "message": "Trek Created Successfully"
@@ -237,6 +251,7 @@ def delete_trek(trek_id):
 
     db.session.delete(trek)
     db.session.commit()
+    cache.clear()
 
     return jsonify({
         "message": "Trek Deleted Successfully"
@@ -279,6 +294,7 @@ def update_trek(trek_id):
     ).date()
 
     db.session.commit()
+    cache.clear()
 
     return jsonify({
         "message": "Trek Updated Successfully"
@@ -297,6 +313,16 @@ def book_trek(trek_id):
         return jsonify({
             "message": "Trek Not Found"
         }), 404
+
+    existing_booking = Booking.query.filter_by(
+        user_id=int(current_user),
+        trek_id=trek_id
+    ).first()
+
+    if existing_booking:
+        return jsonify({
+            "message": "You Have Already Booked This Trek"
+        }), 400
 
     booking = Booking(
         user_id=int(current_user),
@@ -391,6 +417,255 @@ def approve_booking(booking_id):
 
     return jsonify({
         "message": "Booking Approved Successfully"
+    }), 200
+# -------------------- Add Staff --------------------
+
+@app.route("/staff", methods=["POST"])
+@jwt_required()
+def add_staff():
+
+    current_user = get_jwt_identity()
+
+    user = User.query.get(int(current_user))
+
+    if user.role != "admin":
+        return jsonify({
+            "message": "Only Admin Can Add Staff"
+        }), 403
+
+    data = request.get_json()
+
+    existing_staff = User.query.filter_by(
+        email=data["email"]
+    ).first()
+
+    if existing_staff:
+        return jsonify({
+            "message": "Email Already Exists"
+        }), 400
+
+    staff = User(
+        name=data["name"],
+        email=data["email"],
+        password=generate_password_hash(data["password"]),
+        role="staff"
+    )
+
+    db.session.add(staff)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Staff Added Successfully"
+    }), 201
+# -------------------- Get Staff --------------------
+
+@app.route("/staff", methods=["GET"])
+@jwt_required()
+def get_staff():
+
+    current_user = get_jwt_identity()
+
+    user = User.query.get(int(current_user))
+
+    if user.role != "admin":
+        return jsonify({
+            "message": "Only Admin Can View Staff"
+        }), 403
+
+    staffs = User.query.filter_by(role="staff").all()
+
+    result = []
+
+    for staff in staffs:
+
+        result.append({
+    "id": staff.id,
+    "name": staff.name,
+    "email": staff.email,
+    "active": staff.active
+    })
+
+    return jsonify(result), 200
+# -------------------- Assign Staff --------------------
+
+@app.route("/assign/<int:trek_id>", methods=["PUT"])
+@jwt_required()
+def assign_staff(trek_id):
+
+    current_user = get_jwt_identity()
+
+    user = User.query.get(int(current_user))
+
+    if user.role != "admin":
+        return jsonify({
+            "message": "Only Admin Can Assign Staff"
+        }), 403
+
+    trek = Trek.query.get(trek_id)
+
+    if not trek:
+        return jsonify({
+            "message": "Trek Not Found"
+        }), 404
+
+    data = request.get_json()
+
+    staff = User.query.get(data["staff_id"])
+
+    if not staff or staff.role != "staff":
+        return jsonify({
+            "message": "Invalid Staff"
+        }), 400
+
+    trek.assigned_staff_id = staff.id
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Staff Assigned Successfully"
+    }), 200
+# -------------------- Staff Treks --------------------
+
+@app.route("/staff/treks", methods=["GET"])
+@jwt_required()
+def staff_treks():
+
+    current_user = get_jwt_identity()
+
+    user = User.query.get(int(current_user))
+
+    if user.role != "staff":
+        return jsonify({
+            "message": "Only Staff Can View Assigned Treks"
+        }), 403
+
+    treks = Trek.query.filter_by(
+        assigned_staff_id=user.id
+    ).all()
+
+    result = []
+
+    for trek in treks:
+
+        result.append({
+            "id": trek.id,
+            "name": trek.name,
+            "location": trek.location,
+            "difficulty": trek.difficulty,
+            "duration": trek.duration,
+            "available_slots": trek.available_slots,
+            "status": trek.status
+        })
+
+    return jsonify(result), 200
+# -------------------- Staff Update Trek --------------------
+
+@app.route("/staff/treks/<int:trek_id>", methods=["PUT"])
+@jwt_required()
+def update_staff_trek(trek_id):
+
+    current_user = get_jwt_identity()
+
+    user = User.query.get(int(current_user))
+
+    if user.role != "staff":
+        return jsonify({
+            "message": "Only Staff Can Update Trek"
+        }), 403
+
+    trek = Trek.query.get(trek_id)
+
+    if not trek:
+        return jsonify({
+            "message": "Trek Not Found"
+        }), 404
+
+    if trek.assigned_staff_id != user.id:
+        return jsonify({
+            "message": "This Trek Is Not Assigned To You"
+        }), 403
+
+    data = request.get_json()
+
+    trek.available_slots = data["available_slots"]
+    trek.status = data["status"]
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Trek Updated Successfully"
+    }), 200
+@app.route("/staff/treks/<int:trek_id>/participants", methods=["GET"])
+@jwt_required()
+def trek_participants(trek_id):
+
+    current_user = get_jwt_identity()
+
+    user = User.query.get(int(current_user))
+
+    if user.role != "staff":
+        return jsonify({
+            "message": "Only Staff Can View Participants"
+        }), 403
+
+    trek = Trek.query.get(trek_id)
+
+    if not trek:
+        return jsonify({
+            "message": "Trek Not Found"
+        }), 404
+
+    if trek.assigned_staff_id != user.id:
+        return jsonify({
+            "message": "This Trek Is Not Assigned To You"
+        }), 403
+
+    bookings = Booking.query.filter_by(
+        trek_id=trek_id
+    ).all()
+
+    result = []
+
+    for booking in bookings:
+
+        participant = User.query.get(booking.user_id)
+
+        result.append({
+            "id": participant.id,
+            "name": participant.name,
+            "email": participant.email,
+            "status": booking.status
+        })
+
+    return jsonify(result), 200
+# -------------------- Activate / Deactivate Staff --------------------
+
+@app.route("/staff/<int:staff_id>", methods=["PUT"])
+@jwt_required()
+def update_staff_status(staff_id):
+
+    current_user = get_jwt_identity()
+
+    admin = User.query.get(int(current_user))
+
+    if admin.role != "admin":
+        return jsonify({
+            "message": "Only Admin Can Update Staff"
+        }), 403
+
+    staff = User.query.get(staff_id)
+
+    if not staff or staff.role != "staff":
+        return jsonify({
+            "message": "Staff Not Found"
+        }), 404
+
+    staff.active = not staff.active
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Staff Status Updated Successfully"
     }), 200
 if __name__ == "__main__":
     app.run(debug=True)

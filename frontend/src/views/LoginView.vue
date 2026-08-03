@@ -8,6 +8,13 @@
 
             <h3 class="text-center mb-4">Login</h3>
 
+            <div
+              v-if="message"
+              class="alert alert-danger"
+            >
+              {{ message }}
+            </div>
+
             <form @submit.prevent="handleLogin">
 
               <div class="mb-3">
@@ -49,13 +56,20 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import api from '../services/api'
+
+const router = useRouter()
 
 const email = ref('')
 const password = ref('')
+const message = ref('')
 
 const handleLogin = async () => {
   try {
+
+    message.value = ''
+
     const response = await api.post('/login', {
       email: email.value,
       password: password.value
@@ -63,10 +77,16 @@ const handleLogin = async () => {
 
     localStorage.setItem("token", response.data.access_token)
 
-    console.log(response.data)
+    router.push('/dashboard')
 
   } catch (error) {
-    console.log(error.response.data)
+
+    if (error.response) {
+      message.value = error.response.data.message
+    } else {
+      message.value = "Something went wrong"
+    }
+
   }
 }
 </script>

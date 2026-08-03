@@ -59,24 +59,34 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import api from '../services/api'
+
+const router = useRouter()
 
 const name = ref('')
 const email = ref('')
 const password = ref('')
 
 const handleRegister = async () => {
+
   try {
+
     const response = await api.post('/register', {
       name: name.value,
       email: email.value,
       password: password.value
     })
 
-    console.log(response.data)
+    alert(response.data.message)
+
+    router.push('/login')
 
   } catch (error) {
-    console.log(error.response.data)
+
+    alert(error.response?.data?.message || "Registration Failed")
+
   }
+
 }
 </script>
