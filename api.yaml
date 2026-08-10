@@ -1,0 +1,178 @@
+openapi: 3.0.0
+info:
+  title: Trekking Management Application API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:5000
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+paths:
+  /:
+    get:
+      summary: Welcome message
+
+  /register:
+    post:
+      summary: Register a new user
+      security: []
+
+  /login:
+    post:
+      summary: Authenticate user and generate JWT
+      security: []
+
+  /profile:
+    get:
+      summary: Get current user profile
+    put:
+      summary: Update current user profile
+
+  /treks:
+    get:
+      summary: Get treks
+    post:
+      summary: Create a trek
+      description: Admin only
+
+  /treks/{trek_id}:
+    put:
+      summary: Update a trek
+      description: Admin only
+      parameters:
+        - name: trek_id
+          in: path
+          required: true
+          schema:
+            type: integer
+    delete:
+      summary: Delete a trek
+      description: Admin only
+      parameters:
+        - name: trek_id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+  /book/{trek_id}:
+    post:
+      summary: Book a trek
+      parameters:
+        - name: trek_id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+  /mybookings:
+    get:
+      summary: Get current user's bookings
+
+  /allbookings:
+    get:
+      summary: Get all bookings
+      description: Admin only
+
+  /approve/{booking_id}:
+    put:
+      summary: Approve a booking
+      description: Admin only
+      parameters:
+        - name: booking_id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+  /staff:
+    post:
+      summary: Add a staff member
+      description: Admin only
+    get:
+      summary: Get active staff members
+      description: Admin only
+
+  /assign/{trek_id}:
+    put:
+      summary: Assign staff to a trek
+      description: Admin only
+      parameters:
+        - name: trek_id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+  /staff/treks:
+    get:
+      summary: Get treks assigned to current staff member
+      description: Staff only
+
+  /staff/treks/{trek_id}:
+    put:
+      summary: Update an assigned trek
+      description: Staff only
+      parameters:
+        - name: trek_id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+  /staff/treks/{trek_id}/participants:
+    get:
+      summary: Get participants of an assigned trek
+      description: Staff only
+      parameters:
+        - name: trek_id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+  /staff/{staff_id}:
+    put:
+      summary: Activate or deactivate a staff member
+      description: Admin only
+      parameters:
+        - name: staff_id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+  /stats:
+    get:
+      summary: Get admin dashboard statistics
+      description: Admin only
+
+  /users:
+    get:
+      summary: Get registered users
+      description: Admin only
+
+  /users/{user_id}:
+    put:
+      summary: Activate or deactivate a user
+      description: Admin only
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+  /export/bookings:
+    get:
+      summary: Start booking history export
+      description: Starts an asynchronous Celery export task

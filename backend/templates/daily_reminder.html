@@ -1,22 +1,50 @@
-<!DOCTYPE html>
-<html>
+<h2>Hello {{ name }}</h2>
 
-<head>
-    <title>Daily Reminder</title>
-</head>
+<p>
+    Here are your upcoming approved treks:
+</p>
 
-<body>
+<ul>
 
-    <h2>Hello {{ name }}</h2>
+{% for trek in treks %}
 
-    <p>
-        This is your daily reminder to explore and book available treks.
-    </p>
+<li>
 
-    <p>
-        Trekking Management Application
-    </p>
+<b>{{ trek.name }}</b>
 
-</body>
+<br>
 
-</html>
+Location : {{ trek.location }}
+
+<br>
+
+Start Date : {{ trek.start_date }}
+
+<br>
+
+End Date : {{ trek.end_date }}
+
+<br>
+
+Duration : {{ trek.duration }} Days
+
+<br>
+
+Status : {{ trek.status }}
+
+</li>
+
+<br>
+
+{% endfor %}
+
+</ul>
+
+<p>
+    Please arrive on time and carry your ID card,
+    water bottle and trekking essentials.
+</p>
+
+<p>
+    Happy Trekking!
+</p>

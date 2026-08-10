@@ -10,6 +10,30 @@
       v-model="search"
     >
 
+    <select
+      class="form-select mb-3"
+      v-model="difficultyFilter"
+    >
+      <option value="">All Difficulties</option>
+      <option value="Easy">Easy</option>
+      <option value="Moderate">Moderate</option>
+      <option value="Hard">Hard</option>
+    </select>
+
+    <input
+      class="form-control mb-3"
+      type="text"
+      placeholder="Filter by Location"
+      v-model="locationFilter"
+    >
+
+    <input
+      class="form-control mb-3"
+      type="number"
+      placeholder="Filter by Duration (Days)"
+      v-model="durationFilter"
+    >
+
     <ul class="list-group">
 
       <li
@@ -57,12 +81,40 @@ const props = defineProps({
 })
 
 const search = ref("")
+const difficultyFilter = ref("")
+const locationFilter = ref("")
+const durationFilter = ref("")
 
 const filteredTreks = computed(() => {
 
-  return props.treks.filter(trek =>
-    trek.name.toLowerCase().includes(search.value.toLowerCase())
-  )
+  return props.treks.filter(trek => {
+
+    const nameMatch =
+      trek.name.toLowerCase().includes(
+        search.value.toLowerCase()
+      )
+
+    const difficultyMatch =
+      difficultyFilter.value === "" ||
+      trek.difficulty === difficultyFilter.value
+
+    const locationMatch =
+      trek.location.toLowerCase().includes(
+        locationFilter.value.toLowerCase()
+      )
+
+    const durationMatch =
+      durationFilter.value === "" ||
+      trek.duration == durationFilter.value
+
+    return (
+      nameMatch &&
+      difficultyMatch &&
+      locationMatch &&
+      durationMatch
+    )
+
+  })
 
 })
 

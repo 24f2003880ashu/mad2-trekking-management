@@ -36,13 +36,12 @@
                   v-model="password"
                 >
               </div>
-
-              <button
-                type="submit"
-                class="btn btn-primary w-100"
+                <button
+                  type="submit"
+                  class="btn btn-link"
               >
-                Login
-              </button>
+                  Login
+                </button>
 
             </form>
 

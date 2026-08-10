@@ -33,7 +33,11 @@
 
         Status : {{ trek.status }}
 
-        <br><br>
+        <br>
+
+        Participants : {{ trek.participant_count }}
+
+        <br>
 
         <button
           v-if="editId !== trek.id"
@@ -103,11 +107,19 @@
               v-for="participant in participants"
               :key="participant.id"
             >
+
               {{ participant.name }}
+
               -
+
               {{ participant.email }}
+
               -
+
               {{ participant.status }}
+
+            
+
             </li>
 
           </ul>
@@ -203,4 +215,5 @@ onMounted(() => {
   loadTreks()
 
 })
+
 </script>

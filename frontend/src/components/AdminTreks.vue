@@ -31,11 +31,35 @@
       </div>
 
       <div class="mb-2">
-        <input
+        <select
           class="form-control"
-          placeholder="Difficulty"
           v-model="trek.difficulty"
         >
+          <option disabled value="">
+            Select Difficulty
+          </option>
+          <option>Easy</option>
+          <option>Moderate</option>
+          <option>Hard</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <select
+          class="form-control"
+          v-model="trek.assigned_staff_id"
+        >
+          <option :value="null">
+            Select Staff
+          </option>
+
+          <option
+            v-for="staff in staffs"
+            :key="staff.id"
+            :value="staff.id"
+          >
+            {{ staff.name }}
+          </option>
+        </select>
       </div>
 
       <div class="mb-2">
@@ -108,9 +132,37 @@
 
         <strong>{{ trekItem.name }}</strong>
 
-        <br>
+      <br>
 
-        {{ trekItem.location }}
+      Location : {{ trekItem.location }}
+
+      <br>
+
+      Difficulty : {{ trekItem.difficulty }}
+
+      <br>
+
+      Duration : {{ trekItem.duration }} Days
+
+      <br>
+
+      Available Slots : {{ trekItem.available_slots }}
+
+      <br>
+
+      Status : {{ trekItem.status }}
+
+      <br>
+
+      Assigned Staff : {{ trekItem.assigned_staff }}
+
+      <br>
+
+      Start Date : {{ trekItem.start_date }}
+
+      <br>
+
+      End Date : {{ trekItem.end_date }}
 
         <div class="mt-2">
 
@@ -138,7 +190,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed , onMounted } from 'vue'
 import api from '../services/api'
 
 const props = defineProps({
@@ -146,6 +198,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['trek-added'])
+const staffs = ref([])
 
 const search = ref("")
 
@@ -160,7 +213,9 @@ const emptyTrek = () => ({
   available_slots: '',
   status: 'Upcoming',
   start_date: '',
-  end_date: ''
+  end_date: '' ,
+  assigned_staff_id: null
+
 })
 
 const trek = ref(emptyTrek())
@@ -188,6 +243,23 @@ const resetForm = () => {
   showCreateForm.value = false
 
 }
+const loadStaffs = async () => {
+
+  try {
+
+    const response = await api.get("/staff")
+
+    staffs.value = response.data
+
+  }
+
+  catch (error) {
+
+    console.log(error.response?.data || error)
+
+  }
+
+}
 
 const saveTrek = async () => {
 
@@ -195,29 +267,55 @@ const saveTrek = async () => {
 
     if (editMode.value) {
 
-      await api.put(`/treks/${trek.value.id}`, trek.value)
+      await api.put(
+        `/treks/${trek.value.id}`,
+        trek.value
+      )
+
+      if (trek.value.assigned_staff_id) {
+
+        await api.put(
+          `/assign/${trek.value.id}`,
+          {
+            staff_id: trek.value.assigned_staff_id
+          }
+        )
+
+      }
 
       alert("Trek Updated Successfully")
 
-    }
+    } else {
 
-    else {
+      const response = await api.post(
+        "/treks",
+        trek.value
+      )
 
-      await api.post("/treks", trek.value)
+      if (trek.value.assigned_staff_id) {
+
+        await api.put(
+          `/assign/${response.data.id}`,
+          {
+            staff_id: trek.value.assigned_staff_id
+          }
+        )
+
+      }
 
       alert("Trek Added Successfully")
 
     }
 
     emit("trek-added")
-
     resetForm()
 
-  }
+  } catch (error) {
 
-  catch (error) {
-
-    console.log(error.response?.data || error)
+    alert(
+      error.response?.data?.message ||
+      "Something went wrong"
+    )
 
   }
 
@@ -255,9 +353,18 @@ const deleteTrek = async (id) => {
 
   catch (error) {
 
-    console.log(error.response?.data || error)
+    alert(
+      error.response?.data?.message ||
+      "Something went wrong"
+    )
 
   }
 
 }
+
+onMounted(() => {
+
+  loadStaffs()
+
+})
 </script>

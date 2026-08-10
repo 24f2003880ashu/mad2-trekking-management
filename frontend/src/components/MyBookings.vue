@@ -2,7 +2,12 @@
   <div>
 
     <h4>My Bookings</h4>
-
+    <button
+      class="btn btn-primary mb-3"
+      @click="emit('export')"
+    >
+      Export Booking History
+    </button>
     <ul class="list-group">
 
       <li
@@ -15,7 +20,12 @@
 
         <br>
 
-        Booking Date : {{ booking.booking_date }}
+        Booking Date :
+        {{
+          new Date(booking.booking_date).toLocaleDateString(
+            "en-GB"
+          )
+        }}
 
         <br>
 
@@ -29,9 +39,9 @@
 </template>
 
 <script setup>
-
 defineProps({
   bookings: Array
 })
 
+const emit = defineEmits(["export"])
 </script>

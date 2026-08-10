@@ -30,6 +30,10 @@ class Trek(db.Model):
 
     end_date = db.Column(db.Date, nullable=False)
     assigned_staff_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    staff = db.relationship(
+    "User",
+    foreign_keys=[assigned_staff_id]
+)
 from datetime import date
 
 class Booking(db.Model):

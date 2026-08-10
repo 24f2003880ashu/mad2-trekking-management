@@ -1,0 +1,11 @@
+venv/
+testvenv/
+backend/venv/
+frontend/node_modules/
+__pycache__/
+**/__pycache__/
+*.pyc
+celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
+desktop.ini

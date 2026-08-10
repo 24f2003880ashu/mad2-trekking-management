@@ -1,22 +1,23 @@
-<!DOCTYPE html>
-<html>
+<h2>Monthly Trek Activity Report</h2>
 
-<head>
-    <title>Monthly Report</title>
-</head>
+<hr>
 
-<body>
+<p>
+    <strong>Total Treks Conducted :</strong>
+    {{ total_treks }}
+</p>
 
-    <h2>Monthly Trek Report</h2>
+<p>
+    <strong>Total Users Participated :</strong>
+    {{ total_participants }}
+</p>
 
-    <p>
-        Total Bookings : {{ total_bookings }}
-    </p>
+<p>
+    <strong>Most Popular Trek :</strong>
 
-    <p>
-        Total Treks : {{ total_treks }}
-    </p>
-
-</body>
-
-</html>
+    {% if popular_trek %}
+        {{ popular_trek.name }}
+    {% else %}
+        No Trek Available
+    {% endif %}
+</p>

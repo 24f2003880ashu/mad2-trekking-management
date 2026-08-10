@@ -29,7 +29,7 @@
     </div>
 
     <button
-      class="btn btn-primary"
+      class="btn btn-link p-0"
       @click="addStaff"
     >
       Add Staff
@@ -37,12 +37,20 @@
 
     <hr>
 
+    <hr>
+
     <h4>Staff List</h4>
+
+    <input
+      class="form-control mb-3"
+      placeholder="Search Staff"
+      v-model="search"
+    >
 
     <ul class="list-group">
 
       <li
-        v-for="item in staffs"
+        v-for="item in filteredStaffs"
         :key="item.id"
         class="list-group-item"
       >
@@ -74,7 +82,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, onMounted, computed } from "vue"
 import api from "../services/api"
 
 const staff = ref({
@@ -84,6 +92,18 @@ const staff = ref({
 })
 
 const staffs = ref([])
+const search = ref("")
+const filteredStaffs = computed(() => {
+
+  return staffs.value.filter(item =>
+
+    item.name.toLowerCase().includes(
+      search.value.toLowerCase()
+    )
+
+  )
+
+})
 
 const loadStaff = async () => {
 

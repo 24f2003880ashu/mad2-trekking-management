@@ -1,38 +1,47 @@
-# .
+# Trekking Management Application V2
 
-This template should help get you started developing with Vue 3 in Vite.
+Modern Application Development II Project
 
-## Recommended IDE Setup
+## Project Description
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+Trekking Management Application is a web-based application for managing trekking activities, users, staff, bookings and trek information.
 
-## Recommended Browser Setup
+The application provides separate functionality for Admin, Staff and Users.
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Technology Stack
 
-## Customize configuration
+- Flask
+- Flask-SQLAlchemy
+- Flask-JWT-Extended
+- Vue.js
+- Vue Router
+- Axios
+- Bootstrap
+- SQLite
+- Redis
+- Celery
+- MailHog
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## Project Structure
 
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
+```text
+mad2-trekking-management/
+│
+├── backend/
+│   ├── app.py
+│   ├── models.py
+│   ├── config.py
+│   ├── tasks.py
+│   ├── celery_worker.py
+│   ├── celeryconfig.py
+│   └── mail_service.py
+│
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   ├── package.json
+│   └── vite.config.js
+│
+├── api.yaml
+├── mad2_project_report.pdf
+└── README.md

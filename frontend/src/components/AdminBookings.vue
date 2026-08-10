@@ -3,13 +3,7 @@
 
     <h4>Manage Bookings</h4>
 
-    <button
-      class="btn btn-link p-0 mb-3"
-      @click="exportCSV"
-    >
-      Export CSV
-    </button>
-
+    
     <ul class="list-group">
 
       <li
@@ -33,13 +27,12 @@
         Status : {{ booking.status }}
 
         <br><br>
-
-        <button
-          class="btn btn-link p-0"
-          @click="approveBooking(booking.booking_id)"
-        >
-          Approve
-        </button>
+      <button
+        class="btn btn-link p-0"
+        @click="approveBooking(booking.booking_id)"
+      >
+        Approve
+      </button>
 
       </li>
 
